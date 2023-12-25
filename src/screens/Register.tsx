@@ -31,9 +31,9 @@ const Register: React.FC<RegisterProps> = () => {
   const [passworIsHidden, setPasswordIsHidden] = useState<boolean>(true);
   const [copyPassworIsHidden, setCopyPasswordIsHidden] = useState<boolean>(true);
 
-  useEffect(() => {
-    validateForm();
-  }, [login, email, password, copyPassword]);
+  // useEffect(() => {
+  //   validateForm();
+  // }, [login, email, password, copyPassword]);
 
   const validateForm = () => {
     let errors: { email?: string; login?: string; password?: string } = {};
@@ -58,7 +58,7 @@ const Register: React.FC<RegisterProps> = () => {
     if (!password) {
       errors.password = undefined;
     } else if (password.length < 8) {
-      errors.password = 'Длинна паролья не меньше 8 символов';
+      errors.password = 'Длинна пароля не меньше 8 символов';
     } else if (!passwordPattern.test(password)) {
       errors.password = 'Пароль должен содержать большую букву, маленькую букву, спец.символ, цифру';
     } else if (!copyPassword) {
@@ -72,6 +72,7 @@ const Register: React.FC<RegisterProps> = () => {
   };
 
   const handleSubmit = async () => {
+    validateForm();
     if (isFormValid) {
       try {
         const response = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
@@ -89,7 +90,7 @@ const Register: React.FC<RegisterProps> = () => {
         }
 
 
-        Alert.alert("Регистрация прошла успешно");
+        // Alert.alert("Регистрация прошла успешно");
       }
       catch (error: any){
 
@@ -111,9 +112,11 @@ const Register: React.FC<RegisterProps> = () => {
         <Text style={{ fontSize: 28, marginBottom: 15 }}>Регистрация</Text>
         <TextInput
           placeholder="Введите email"
-          style={styles.MyInput}
+          style={[styles.MyInput, {marginBottom: errors.email ? 0 : 18}]}
           value={email}
           onChangeText={setEmail}
+          onFocus={() => setErrors((prevErrors) => ({ ...prevErrors, email: undefined }))}
+          inputMode='email'
         />
         <Text style={[styles.MyError, { display: errors.email ? 'flex' : 'none' }]}>
           {errors.email}
@@ -121,9 +124,10 @@ const Register: React.FC<RegisterProps> = () => {
 
         <TextInput
           placeholder="Введите никнейм"
-          style={styles.MyInput}
+          style={[styles.MyInput, {marginBottom: errors.login ? 0 : 18}]}
           value={login}
           onChangeText={setLogin}
+          onFocus={() => setErrors((prevErrors) => ({ ...prevErrors, login: undefined }))}
         />
         <Text style={[styles.MyError, { display: errors.login ? 'flex' : 'none' }]}>
           {errors.login}
@@ -132,10 +136,11 @@ const Register: React.FC<RegisterProps> = () => {
         <View style = {{flexDirection:'row'}}>
             <TextInput
             placeholder="Введите пароль"
-            style={styles.MyInput}
+            style={[styles.MyInput,]}
             secureTextEntry = {passworIsHidden ? true : false}
             value={password}
             onChangeText={setPassword}
+            onFocus={() => setErrors((prevErrors) => ({ ...prevErrors, password: undefined }))}
             />
             <Pressable onPress={() => {
                 if(passworIsHidden){
@@ -151,10 +156,11 @@ const Register: React.FC<RegisterProps> = () => {
         <View style = {{flexDirection:'row'}}>
             <TextInput
             placeholder="Повторите пароль"
-            style={styles.MyInput}
+            style={[styles.MyInput, {marginBottom: errors.password ? 0 : 18}]}
             secureTextEntry = {copyPassworIsHidden ? true : false}
             value={copyPassword}
             onChangeText={setCopyPassword}
+            onFocus={() => setErrors((prevErrors) => ({ ...prevErrors, password: undefined }))}
             />
             <Pressable onPress={() => {
                 if(copyPassworIsHidden){
@@ -163,7 +169,7 @@ const Register: React.FC<RegisterProps> = () => {
                     setCopyPasswordIsHidden(true)
                 }            
             }}>
-                <FontAwesome5 name={copyPassworIsHidden ? "eye" : "eye-slash"} size={24} color="black" style= {{position: 'absolute', right: 7, top: '30%'}} />
+                <FontAwesome5 name={copyPassworIsHidden ? "eye" : "eye-slash"} size={24} color="black" style= {{position: 'absolute', right: 7, top: '25%'}} />
             </Pressable>    
         </View>
         <Text style={[styles.MyError, { display: errors.password ? 'flex' : 'none' }]}>
@@ -172,8 +178,9 @@ const Register: React.FC<RegisterProps> = () => {
 
         <Pressable
           onPress={handleSubmit}
-          style={[styles.MyButton, { opacity: isFormValid ? 1 : 0.5 }]}
-          disabled={!isFormValid}>
+          style={[styles.MyButton,]}
+          // disabled={!isFormValid}
+          >
           <Text style={{ fontSize: 20 }}>Зарегистрироваться</Text>
         </Pressable>
 

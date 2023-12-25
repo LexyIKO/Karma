@@ -1,9 +1,12 @@
 import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, SafeAreaView, Pressable, Alert, ScrollView } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { signInWithEmailAndPassword, signInAnonymously} from "firebase/auth";
-import { FIREBASE_AUTH } from '../../firebase-config';
+
 import { FontAwesome5 } from '@expo/vector-icons';
+
+import { signInWithEmailAndPassword, signInAnonymously} from "firebase/auth";
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase-config';
+import { doc, setDoc } from "firebase/firestore"; 
 
 interface LoginProps {
   navigation: NavigationProp<any>;
@@ -20,9 +23,9 @@ const Login: React.FC<LoginProps> = () => {
   const [passworIsHidden, setPasswordIsHidden] = useState<boolean>(true);
   
 
-  useEffect(() => {
-    validateForm();
-  }, [email, password]);
+  // useEffect(() => {
+  //   validateForm();
+  // }, [email, password]);
 
   const validateForm = () => {
     let errors: { email?: string; login?: string; password?: string } = {};
@@ -33,7 +36,7 @@ const Login: React.FC<LoginProps> = () => {
     if (!email) {
       errors.email = undefined;
     } else if (!emailPattern.test(email)) {
-      errors.email = 'Почта введена неrкоректно';
+      errors.email = 'Почта введена неккоректно';
     }
 
     // Валидация пароля
@@ -48,6 +51,7 @@ const Login: React.FC<LoginProps> = () => {
 
 
   const handleSubmit = async () => {
+    validateForm();
     if (isFormValid) {
       try {
         const response = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
@@ -65,13 +69,25 @@ const Login: React.FC<LoginProps> = () => {
   };
 
   const AnonSignIn = () => {
-    
-    try {
-      signInAnonymously(FIREBASE_AUTH)
-    }
-    catch (error: any){
-      Alert.alert("Неверные данные");
-    }
+    signInAnonymously(FIREBASE_AUTH)
+      .then(async () => {
+        const userId : string | undefined = FIREBASE_AUTH.currentUser?.uid;
+        const db = FIRESTORE_DB;
+
+        if(userId){
+          await setDoc(doc(db, "user-info", userId), {
+            login: 'Anonym',
+            email: 'empty',
+            rating: 0,
+            karma: 0,
+          });
+        }
+      })
+   
+      .catch ((error: any)=>{
+        Alert.alert("Неверные данные");
+      })
+
   };
 
   return (
@@ -81,31 +97,34 @@ const Login: React.FC<LoginProps> = () => {
 
             <TextInput
             placeholder="Введите почту"
-            style={styles.MyInput}
+            style={[styles.MyInput, {marginBottom: errors.email ? 0 : 18}]}
             value={email}
             onChangeText={setEmail}
+            onFocus={() => setErrors((prevErrors) => ({ ...prevErrors, email: undefined }))}
+            inputMode='email'
             />
-            <Text style={[styles.MyError, { display: errors.email ? 'flex' : 'none' }]}>
+            <Text style={[styles.MyError, { display: errors.email ? 'flex' : 'none' }, ]}>
             {errors.email}
             </Text>
 
             <View style = {{flexDirection:'row'}}>
-            <TextInput
-                placeholder="Введите пароль"
-                style={styles.MyInput}
-                secureTextEntry = {passworIsHidden ? true : false}
-                value={password}
-                onChangeText={setPassword}
-            />
-            <Pressable onPress={() => {
-                if(passworIsHidden){
-                    setPasswordIsHidden(false)
-                }else{
-                    setPasswordIsHidden(true)
-                }            
-            }}>
-                <FontAwesome5 name={passworIsHidden ? "eye" : "eye-slash"} size={24} color="black" style= {{position: 'absolute', right: 7, top: '30%'}} />
-            </Pressable>
+              <TextInput
+                  placeholder="Введите пароль"
+                  style={[styles.MyInput, {marginBottom: errors.password ? 0 : 18}]}
+                  secureTextEntry = {passworIsHidden ? true : false}
+                  value={password}
+                  onChangeText={setPassword}
+                  onFocus={() => setErrors((prevErrors) => ({ ...prevErrors, password: undefined }))}
+              />
+              <Pressable onPress={() => {
+                  if(passworIsHidden){
+                      setPasswordIsHidden(false)
+                  }else{
+                      setPasswordIsHidden(true)
+                  }            
+              }}>
+                  <FontAwesome5 name={passworIsHidden ? "eye" : "eye-slash"} size={24} color="black" style= {{position: 'absolute', right: 7, top: '25%'}} />
+              </Pressable>
             </View>
             <Text style={[styles.MyError, { display: errors.password ? 'flex' : 'none' }]}>
                 {errors.password}
@@ -113,8 +132,11 @@ const Login: React.FC<LoginProps> = () => {
 
             <Pressable
                 onPress={handleSubmit}
-                style={[styles.MyButton, { opacity: isFormValid ? 1 : 0.5 }]}
-                disabled={!isFormValid}>
+                style={[styles.MyButton, 
+                  // { opacity: isFormValid ? 1 : 0.5 }
+                ]}
+                // disabled={!isFormValid}
+                >
                 <Text style={{ fontSize: 22, textAlign: 'center'}}>Войти</Text>
             </Pressable>
 
