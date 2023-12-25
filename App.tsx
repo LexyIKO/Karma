@@ -1,9 +1,11 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import Login from './src/screens/Login'
 import Register from './src/screens/Register'
 import Profile from './src/screens/Profile'
 import Home from './src/screens/Home'
+
 import { FIREBASE_AUTH } from './firebase-config';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { useState, useEffect } from 'react'
@@ -47,6 +49,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
+      
       <Stack.Navigator initialRouteName='Login'>
         {user ? (
           <Stack.Screen name = "Inside" component={InsideLayuout} options={{headerShown: false}}/>
@@ -54,6 +57,8 @@ export default function App() {
         <Stack.Screen name = "Outside" component={OutsideLayout} options={{headerShown: false}}/>  
         )}
       </Stack.Navigator>
+
+      
     </NavigationContainer>
   );
 }

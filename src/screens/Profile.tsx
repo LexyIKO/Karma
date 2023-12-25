@@ -1,4 +1,4 @@
-import { StyleSheet, Text, SafeAreaView, Alert } from 'react-native';4
+import { StyleSheet, Text, SafeAreaView, Alert, Platform } from 'react-native';4
 import { useState, useEffect } from 'react';
 
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase-config';
@@ -9,6 +9,11 @@ import { FontAwesome5, SimpleLineIcons } from '@expo/vector-icons';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import UserData from '../../data';
+
+import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
+
+const statusBarHeight = Constants.statusBarHeight;
 
 const Profile: React.FC = () => {
 
@@ -65,23 +70,17 @@ const Profile: React.FC = () => {
    }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? statusBarHeight : 0}]}>
       <Header title='Профиль' />
-
-
-
-      <SimpleLineIcons name="logout" size={30} color="white" onPress={handleLogout} style={styles.logout}/>
+      <SimpleLineIcons name="logout" size={30} color="white" onPress={handleLogout} style={[styles.logout, { paddingTop: Platform.OS === 'android' ? statusBarHeight : 0}]}/>
       <Text style={{marginTop: 100, fontSize: 30, fontWeight: "700"}}>{login}</Text>
       <FontAwesome5 name="user-alt" size={160} color="black" style={{marginTop:5}}/>
       <Text style={{marginTop: 10, fontSize: 24, fontWeight: "600"}}>РЕЙТИНГ</Text>
       <Text style={{marginTop: 5, fontSize: 20, fontWeight: "500"}}>{rating}</Text>
       <Text style={{marginTop: 30, fontSize: 24, fontWeight: "600"}}>КАРМА</Text>
       <Text style={{marginTop: 5, fontSize: 20, fontWeight: "500"}}>{karma}</Text>
-     
-
-
-
       <Footer isHome={false}/>
+      <StatusBar style='auto'/>
     </SafeAreaView>
   );
 };
